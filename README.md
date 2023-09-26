@@ -29,3 +29,15 @@ cd Karukatta
 ./build/karukatta <srcCode.kar> -o nameOfTheoutputBin
 ```
 
+### Example
+```
+# Open the example folder
+cd example
+# compile the karukatta code
+../build/karukatta example.kar -o code
+# Run the code
+./code
+# Check the exit returned
+echo $?
+```
+
