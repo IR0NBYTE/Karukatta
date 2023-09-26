@@ -30,7 +30,7 @@ cd Karukatta
 ```
 
 ### Example
-```
+``` bash
 # Open the example folder
 cd example
 # compile the karukatta code
