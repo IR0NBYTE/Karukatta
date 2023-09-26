@@ -4,6 +4,14 @@
 #include <cassert>
 #include <algorithm>
 
+using namespace std;
+
+/*
+    Karukatta Compiler 2023.
+    IronByte.
+*/
+
+
 class Generator {
 public:
     inline explicit Generator(NodeProg prog)

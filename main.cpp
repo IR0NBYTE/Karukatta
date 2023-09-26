@@ -6,7 +6,10 @@
 #include "./pkg/gen.hpp"
 
 using namespace std;
-
+/*
+    Karukatta Compiler 2023.
+    
+*/
 
 void usage() {
     cout << "Usage: karukatta <file.kar> -o nameOfTheoutputBin\n";
