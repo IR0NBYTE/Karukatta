@@ -19,13 +19,13 @@ print_error() {
 
 mkdir -p "build"
     
-g++ main.cpp -o ./build/karukatta
+g++ main.cpp -o ./build/karukatta -s -static 
 
 if [ $? -eq 0 ]; then
     print_log "Compiling Terminated Successfully!"
     print_log "Running!"
     chmod +x ./build/karukatta
-    ./build/karukatta $1
+    ./build/karukatta $1 $2 $3
 else
     print_error "Compiling Karukatta!"
 fi

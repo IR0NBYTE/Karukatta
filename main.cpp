@@ -1,112 +1,62 @@
-#include "./pkg/gen.cpp"
 #include <iostream>
 #include <fstream>
 #include <optional>
 #include <vector> 
 #include <sstream>
-#include <string>
+#include "./pkg/gen.hpp"
 
 using namespace std;
 
-enum class TokenType {
-    _return,
-    int_lit,
-    semi
-};
 
-typedef struct Token {
-    TokenType type; 
-    optional<string> value; 
-} Token;
-
-void fail() {
-    cerr << "Syntax error!\n";
-    exit(EXIT_FAILURE);
-}
-
-vector<Token> Tokenize(const string& line) {
-    vector<Token> tokens;
-    string buffer;
-    if (isdigit(line[0]))
-        fail();
-    for (size_t i = 0; i < line.size(); ++i) {
-        char current = line[i];
-
-        if (isalpha(current)) {
-            buffer += current;
-            while (isalpha(line[++i])) {
-                buffer += line[i];
-            }
-            i--;
-            if (buffer == "return") {
-                tokens.push_back({TokenType::_return, ""});
-                buffer.clear();
-            } else
-                fail();
-        } else if (isdigit(current)) {
-            buffer += current;
-            while (isdigit(line[++i])) {
-                buffer += line[i];
-            }
-            i--;
-            tokens.push_back({TokenType::int_lit, buffer});
-            buffer.clear();
-        } else if (current == ';') {
-            tokens.push_back({TokenType::semi, ""});
-        } else if (!isspace(current)) fail();
-    }
-    return tokens;
-}
-
-
-string Tokens_To_ASM(const vector<Token>& tokens) {
-    stringstream output;
-    
-    for(int i = 0; i < tokens.size(); i++) {
-        if (tokens[i].type == TokenType::_return) {
-            output << "    mov rax, 60\n";
-            output << "    mov rdi, " << tokens[i + 1].value.value() << "\n";
-            output << "    syscall";
-        }
-    }
-    return output.str(); 
+void usage() {
+    cout << "Usage: karukatta <file.kar> -o nameOfTheoutputBin\n";
 }
 
 int main(int argc, char const *argv[]) {
 
-    if (argc != 2)
-        cout << "Usage: karukatta <file.kar>\n";
+    if (argc != 4)
+        usage();
     else {
-        string filepath = argv[1];
-        ifstream inputFile;
-        inputFile.open(filepath);
+        string filePath = argv[1];
+        string flag = argv[2];
+        string outName = argv[3];
+        if (flag != "-o")
+            usage();
+        
+        std::string srcCode;
+        {
+            std::stringstream contents_stream;
+            std::fstream input(argv[1], std::ios::in);
+            contents_stream << input.rdbuf();
+            srcCode = contents_stream.str();
+        }
+        Lexer lexi(move(srcCode));
+        vector<Token> tks = lexi.lexerize();
 
-        if (!inputFile.is_open()) {
-            cerr << "Failed to open the file." << "\n";
+        Parser parsi(move(tks));
+        optional<NodeProg> prog = parsi.parse_prog();
+
+        if (!prog.has_value()) {
+            cerr << "Syntaxe Error !" << "\n";
             exit(EXIT_FAILURE);
         }
-        ofstream outputFile("code.asm");
-        if (!outputFile.is_open()) {
-            cerr << "Failed to open the file." << std::endl;
-            exit(EXIT_FAILURE);
+
+        Generator gen(prog.value()); {
+            ofstream outputFile(outName + ".asm");
+            if (!outputFile.is_open()) {
+                cerr << "Failed to create the output file." << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            outputFile << gen.gen_prog();
+            outputFile.close();
         }
-        outputFile << "global _start\n\n";
-        outputFile << "_start:\n";
-        string line;
-        while (getline(inputFile, line)) {
-            // cout << line << "\n";
-            vector<Token> tks = Tokenize(line);
-            // for(Token u : tk) {
-            //     cout <<  static_cast<int>(u.type) << " ";
-            //     cout << u.value.value() << "\n";
-            // }
-            outputFile << Tokens_To_ASM(tks);
-        }   
-        outputFile.close();
-        inputFile.close();
-        system("nasm -felf64 code.asm");
-        system("ld -o code code.o");
-        system("chmod +x code");
+
+        string cmd = "nasm -felf64 " + outName + ".asm"; 
+        system(cmd.c_str());
+        cmd ="ld -o " + outName + " " + outName + ".o";
+        system(cmd.c_str());
+        cmd = "chmod +x "+ outName;
+        system(cmd.c_str());
     }
     
 
