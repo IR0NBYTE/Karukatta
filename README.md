@@ -1,5 +1,5 @@
 # Karukatta
-
+![Alt text](logo-white.png)
 Karukatta is a simple compiler written in C++ that uses NASM (Netwide Assembler) for assembly and the GNU LD (Linker) for linking. It's designed to compile Karukatta source code and produce executable files on Unix-based systems.
 
 ## Features
