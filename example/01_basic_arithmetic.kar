@@ -1,0 +1,11 @@
+// Basic arithmetic operations
+// This program demonstrates integer arithmetic with proper precedence
+
+let a = 5;
+let b = 3;
+let sum = a + b;
+let product = a * b;
+let complex = a * 2 + b;
+
+exit(complex);
+// Expected exit code: 13 (5 * 2 + 3)

@@ -1,0 +1,18 @@
+// Lexical scoping demonstration
+// Variables are scoped to their enclosing block
+
+let x = 10;
+
+{
+    let y = 20;
+    let z = x + y;
+
+    {
+        let inner = z * 2;
+        exit(inner);
+        // Expected exit code: 60 ((10 + 20) * 2)
+    }
+}
+
+// y and z are no longer in scope here
+exit(0);

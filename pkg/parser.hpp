@@ -5,6 +5,7 @@
 
 #include "arena.hpp"
 #include "lexer.hpp"
+#include "error.hpp"
 
 using namespace std; 
 
@@ -43,8 +44,41 @@ struct NodeBinExprDiv {
     NodeExpr* rhs;
 };
 
+struct NodeBinExprCmpEq {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
+struct NodeBinExprCmpNotEq {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
+struct NodeBinExprCmpLess {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
+struct NodeBinExprCmpLessEq {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
+struct NodeBinExprCmpGreater {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
+struct NodeBinExprCmpGreaterEq {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
 struct NodeBinExpr {
-    variant<NodeBinExprAdd*, NodeBinExprMulti*, NodeBinExprSub*, NodeBinExprDiv*> var;
+    variant<NodeBinExprAdd*, NodeBinExprMulti*, NodeBinExprSub*, NodeBinExprDiv*,
+            NodeBinExprCmpEq*, NodeBinExprCmpNotEq*,
+            NodeBinExprCmpLess*, NodeBinExprCmpLessEq*,
+            NodeBinExprCmpGreater*, NodeBinExprCmpGreaterEq*> var;
 };
 
 struct NodeTerm {
@@ -73,10 +107,16 @@ struct NodeScope {
 struct NodeStmtIf {
     NodeExpr* expr;
     NodeScope* scope;
+    optional<NodeScope*> else_scope;
+};
+
+struct NodeStmtWhile {
+    NodeExpr* expr;
+    NodeScope* scope;
 };
 
 struct NodeStmt {
-    variant<NodeStmtExit*, NodeStmtLet*, NodeScope*, NodeStmtIf*> var;
+    variant<NodeStmtExit*, NodeStmtLet*, NodeScope*, NodeStmtIf*, NodeStmtWhile*> var;
 };
 
 struct NodeProg {
@@ -110,8 +150,11 @@ public:
         else if (auto open_paren = try_consume(TokenType::open_paren)) {
             auto expr = parse_expr();
             if (!expr.has_value()) {
-                cerr << "Expected expression" << endl;
-                exit(EXIT_FAILURE);
+                if (peek().has_value()) {
+                    ErrorReporter::error(peek().value().loc, "Expected expression");
+                } else {
+                    ErrorReporter::error("Expected expression");
+                }
             }
             try_consume(TokenType::close_paren, "Expected `)`");
             auto term_paren = m_allocator.alloc<NodeTermParen>();
@@ -183,8 +226,50 @@ public:
                 div->rhs = expr_rhs.value();
                 expr->var = div;
             }
+            else if (op.type == TokenType::eq_eq) {
+                auto cmp = m_allocator.alloc<NodeBinExprCmpEq>();
+                expr_lhs2->var = expr_lhs->var;
+                cmp->lhs = expr_lhs2;
+                cmp->rhs = expr_rhs.value();
+                expr->var = cmp;
+            }
+            else if (op.type == TokenType::neq) {
+                auto cmp = m_allocator.alloc<NodeBinExprCmpNotEq>();
+                expr_lhs2->var = expr_lhs->var;
+                cmp->lhs = expr_lhs2;
+                cmp->rhs = expr_rhs.value();
+                expr->var = cmp;
+            }
+            else if (op.type == TokenType::less) {
+                auto cmp = m_allocator.alloc<NodeBinExprCmpLess>();
+                expr_lhs2->var = expr_lhs->var;
+                cmp->lhs = expr_lhs2;
+                cmp->rhs = expr_rhs.value();
+                expr->var = cmp;
+            }
+            else if (op.type == TokenType::less_eq) {
+                auto cmp = m_allocator.alloc<NodeBinExprCmpLessEq>();
+                expr_lhs2->var = expr_lhs->var;
+                cmp->lhs = expr_lhs2;
+                cmp->rhs = expr_rhs.value();
+                expr->var = cmp;
+            }
+            else if (op.type == TokenType::greater) {
+                auto cmp = m_allocator.alloc<NodeBinExprCmpGreater>();
+                expr_lhs2->var = expr_lhs->var;
+                cmp->lhs = expr_lhs2;
+                cmp->rhs = expr_rhs.value();
+                expr->var = cmp;
+            }
+            else if (op.type == TokenType::greater_eq) {
+                auto cmp = m_allocator.alloc<NodeBinExprCmpGreaterEq>();
+                expr_lhs2->var = expr_lhs->var;
+                cmp->lhs = expr_lhs2;
+                cmp->rhs = expr_rhs.value();
+                expr->var = cmp;
+            }
             else {
-                assert(false); 
+                assert(false);
             }
             expr_lhs->var = expr;
         }
@@ -273,8 +358,40 @@ public:
                 cerr << "Invalid scope" << endl;
                 exit(EXIT_FAILURE);
             }
+            // Check for optional else clause
+            if (try_consume(TokenType::else_).has_value()) {
+                if (auto else_scope = parse_scope()) {
+                    stmt_if->else_scope = else_scope.value();
+                }
+                else {
+                    cerr << "Invalid else scope" << endl;
+                    exit(EXIT_FAILURE);
+                }
+            }
             auto stmt = m_allocator.alloc<NodeStmt>();
             stmt->var = stmt_if;
+            return stmt;
+        }
+        else if (auto while_ = try_consume(TokenType::while_)) {
+            try_consume(TokenType::open_paren, "Expected `(`");
+            auto stmt_while = m_allocator.alloc<NodeStmtWhile>();
+            if (auto expr = parse_expr()) {
+                stmt_while->expr = expr.value();
+            }
+            else {
+                cerr << "Invalid expression" << endl;
+                exit(EXIT_FAILURE);
+            }
+            try_consume(TokenType::close_paren, "Expected `)`");
+            if (auto scope = parse_scope()) {
+                stmt_while->scope = scope.value();
+            }
+            else {
+                cerr << "Invalid scope" << endl;
+                exit(EXIT_FAILURE);
+            }
+            auto stmt = m_allocator.alloc<NodeStmt>();
+            stmt->var = stmt_while;
             return stmt;
         }
         else {
@@ -319,8 +436,12 @@ private:
             return consume();
         }
         else {
-            cerr << err_msg << endl;
-            exit(EXIT_FAILURE);
+            if (peek().has_value()) {
+                ErrorReporter::error(peek().value().loc, err_msg);
+            } else {
+                ErrorReporter::error("Unexpected end of file: " + err_msg);
+            }
+            exit(EXIT_FAILURE);  // Unreachable but keeps compiler happy
         }
     }
 

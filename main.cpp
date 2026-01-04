@@ -8,7 +8,6 @@
 using namespace std;
 /*
     Karukatta Compiler 2023.
-    
 */
 
 void usage() {
@@ -33,7 +32,7 @@ int main(int argc, char const *argv[]) {
             contents_stream << input.rdbuf();
             srcCode = contents_stream.str();
         }
-        Lexer lexi(move(srcCode));
+        Lexer lexi(std::move(srcCode), filePath);
         vector<Token> tks = lexi.lexerize();
 
         Parser parsi(move(tks));

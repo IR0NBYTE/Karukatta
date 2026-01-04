@@ -1,0 +1,11 @@
+// Conditional execution with if statements
+// In Karukatta, 0 is false and any non-zero value is true
+
+let condition = 1;
+
+if (condition) {
+    exit(42);
+}
+
+exit(0);
+// Expected exit code: 42 (condition is true)

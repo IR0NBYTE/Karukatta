@@ -1,0 +1,10 @@
+// Test while loop
+// Since we don't have mutable variables, this demonstrates the structure
+let flag = 1;
+
+while (flag) {
+    exit(42);
+}
+
+exit(0);
+// Expected exit code: 42 (loop executes once and exits)

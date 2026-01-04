@@ -1,0 +1,11 @@
+// Test else clause
+let x = 10;
+let y = 20;
+
+if (x > y) {
+    exit(1);
+} else {
+    exit(42);
+}
+
+// Expected exit code: 42

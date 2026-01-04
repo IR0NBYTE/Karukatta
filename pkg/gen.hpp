@@ -90,6 +90,72 @@ public:
                 gen.m_output << "    div rbx\n";
                 gen.push("rax");
             }
+            void operator()(const NodeBinExprCmpEq* cmp) const
+            {
+                gen.gen_expr(cmp->rhs);
+                gen.gen_expr(cmp->lhs);
+                gen.pop("rax");
+                gen.pop("rbx");
+                gen.m_output << "    cmp rax, rbx\n";
+                gen.m_output << "    sete al\n";
+                gen.m_output << "    movzx rax, al\n";
+                gen.push("rax");
+            }
+            void operator()(const NodeBinExprCmpNotEq* cmp) const
+            {
+                gen.gen_expr(cmp->rhs);
+                gen.gen_expr(cmp->lhs);
+                gen.pop("rax");
+                gen.pop("rbx");
+                gen.m_output << "    cmp rax, rbx\n";
+                gen.m_output << "    setne al\n";
+                gen.m_output << "    movzx rax, al\n";
+                gen.push("rax");
+            }
+            void operator()(const NodeBinExprCmpLess* cmp) const
+            {
+                gen.gen_expr(cmp->rhs);
+                gen.gen_expr(cmp->lhs);
+                gen.pop("rax");
+                gen.pop("rbx");
+                gen.m_output << "    cmp rax, rbx\n";
+                gen.m_output << "    setl al\n";
+                gen.m_output << "    movzx rax, al\n";
+                gen.push("rax");
+            }
+            void operator()(const NodeBinExprCmpLessEq* cmp) const
+            {
+                gen.gen_expr(cmp->rhs);
+                gen.gen_expr(cmp->lhs);
+                gen.pop("rax");
+                gen.pop("rbx");
+                gen.m_output << "    cmp rax, rbx\n";
+                gen.m_output << "    setle al\n";
+                gen.m_output << "    movzx rax, al\n";
+                gen.push("rax");
+            }
+            void operator()(const NodeBinExprCmpGreater* cmp) const
+            {
+                gen.gen_expr(cmp->rhs);
+                gen.gen_expr(cmp->lhs);
+                gen.pop("rax");
+                gen.pop("rbx");
+                gen.m_output << "    cmp rax, rbx\n";
+                gen.m_output << "    setg al\n";
+                gen.m_output << "    movzx rax, al\n";
+                gen.push("rax");
+            }
+            void operator()(const NodeBinExprCmpGreaterEq* cmp) const
+            {
+                gen.gen_expr(cmp->rhs);
+                gen.gen_expr(cmp->lhs);
+                gen.pop("rax");
+                gen.pop("rbx");
+                gen.m_output << "    cmp rax, rbx\n";
+                gen.m_output << "    setge al\n";
+                gen.m_output << "    movzx rax, al\n";
+                gen.push("rax");
+            }
         };
 
         BinExprVisitor visitor { .gen = *this };
@@ -154,11 +220,36 @@ public:
             {
                 gen.gen_expr(stmt_if->expr);
                 gen.pop("rax");
-                string label = gen.create_label();
+                string label_else = gen.create_label();
+                string label_end = gen.create_label();
                 gen.m_output << "    test rax, rax\n";
-                gen.m_output << "    jz " << label << "\n";
+                gen.m_output << "    jz " << label_else << "\n";
+                // If body (true branch)
                 gen.gen_scope(stmt_if->scope);
-                gen.m_output << label << ":\n";
+                if (stmt_if->else_scope.has_value()) {
+                    gen.m_output << "    jmp " << label_end << "\n";
+                }
+                gen.m_output << label_else << ":\n";
+                // Else body (if present)
+                if (stmt_if->else_scope.has_value()) {
+                    gen.gen_scope(stmt_if->else_scope.value());
+                    gen.m_output << label_end << ":\n";
+                }
+            }
+            void operator()(const NodeStmtWhile* stmt_while) const
+            {
+                string label_start = gen.create_label();
+                string label_end = gen.create_label();
+                gen.m_output << label_start << ":\n";
+                // Evaluate condition
+                gen.gen_expr(stmt_while->expr);
+                gen.pop("rax");
+                gen.m_output << "    test rax, rax\n";
+                gen.m_output << "    jz " << label_end << "\n";
+                // Loop body
+                gen.gen_scope(stmt_while->scope);
+                gen.m_output << "    jmp " << label_start << "\n";
+                gen.m_output << label_end << ":\n";
             }
         };
 

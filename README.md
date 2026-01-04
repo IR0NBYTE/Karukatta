@@ -1,46 +1,336 @@
 # Karukatta
-<div style="text-align:center;">
-    <img src="logo-white.png" alt="Alt text" width="500" height="500">
+
+<div align="center">
+    <img src="logo-white.png" alt="Karukatta Logo" width="500" height="500">
 </div>
 
-Karukatta is a simple compiler written in C++ that uses NASM (Netwide Assembler) for assembly and the GNU LD (Linker) for linking. It's designed to compile Karukatta source code and produce executable files on Unix-based systems.
+A compiler for the Karukatta programming language, written in C++. Compiles to native x86-64 executables via NASM assembly.
+
+## About
+
+Karukatta is an educational compiler demonstrating classical compiler construction techniques. It implements a complete compilation pipeline from source code to executable binary, including lexical analysis, syntax analysis with operator precedence parsing, and x86-64 code generation.
+
+The compiler is designed to be readable and serve as a learning resource for compiler implementation, while remaining capable of producing functional executables.
+
+## Language Overview
+
+Karukatta is an imperative language with C-like syntax supporting:
+
+- Integer arithmetic with proper operator precedence
+- Comparison operators for conditional logic
+- Variable declarations and lexical scoping
+- Conditional execution with if-else statements
+- While loops for iteration
+- Single-line comments
+- Program exit with status codes
+
+### Example Program
+
+```kar
+// Variable declarations and comparisons
+let x = 10;
+let y = 20;
+
+// Conditional logic with else
+if (x < y) {
+    exit(1);
+} else {
+    exit(0);
+}
+```
+
+For a complete language reference, see [Language Specification](docs/language-specification.md).
 
 ## Features
 
-- Karukatta source code compilation.
-- Assembly using NASM.
-- Linking using the GNU LD linker.
-- Generates executable files.
+**Compiler Implementation**:
+- Single-pass compilation architecture
+- Pratt parser for expression precedence
+- Professional error reporting with line and column tracking
+- Arena-based memory allocation for AST nodes
+- Stack-based code generation
+- Direct x86-64 assembly output
+
+**Language Features**:
+- Arithmetic expressions: `+`, `-`, `*`, `/`
+- Comparison operators: `==`, `!=`, `<`, `<=`, `>`, `>=`
+- Variable bindings with `let`
+- Lexically scoped blocks
+- Conditional execution with `if` and `else`
+- While loops
+- Single-line comments with `//`
+- System exit with return codes
+
+## Prerequisites
+
+**Build Requirements**:
+- C++17 compatible compiler (GCC 7+, Clang 5+)
+- Make or equivalent build system
+
+**Runtime Requirements**:
+- NASM (Netwide Assembler)
+- GNU LD (Linker)
+- Linux x86-64 system
+
+### Installing Prerequisites
+
+**Debian/Ubuntu**:
+```bash
+sudo apt-get update
+sudo apt-get install build-essential nasm
+```
+
+**Fedora/RHEL**:
+```bash
+sudo dnf install gcc-c++ nasm
+```
+
+**macOS**:
+```bash
+brew install nasm
+# Xcode Command Line Tools provides g++
+xcode-select --install
+```
 
 ## Installation
-Clone this repository to your local machine:
+
+Clone the repository:
 ```bash
 git clone https://github.com/IR0NBYTE/Karukatta.git
 cd Karukatta
 ```
-### Prerequisites
 
-Before installing and using the compiler, ensure you have the following prerequisites installed on your system:
-
-- NASM (Netwide Assembler)
-- GNU LD (Linker)
-
-### Usage
-
-```bash 
-cd Karukatta
-./build/karukatta <srcCode.kar> -o nameOfTheoutputBin
+Build the compiler:
+```bash
+./runner.sh
 ```
 
-### Example
-``` bash
-# Open the example folder
+The compiled binary will be located at `build/karukatta`.
+
+## Usage
+
+### Compiling a Program
+
+```bash
+./build/karukatta <source.kar> -o <output-binary>
+```
+
+The compiler generates an executable binary that can be run directly:
+
+```bash
+./build/karukatta program.kar -o program
+./program
+echo $?  # Check exit status
+```
+
+### Running the Example
+
+```bash
 cd example
-# compile the karukatta code
 ../build/karukatta example.kar -o code
-# Run the code
 ./code
-# Check the exit returned
-echo $?
+echo $?  # Should output: 5
 ```
 
+### Compilation Process
+
+The compiler performs the following steps:
+1. Lexical analysis (tokenization)
+2. Syntax analysis (parsing to AST)
+3. Code generation (x86-64 assembly)
+4. Assembly (NASM produces object file)
+5. Linking (LD produces executable)
+
+Intermediate `.asm` and `.o` files are generated alongside the output binary.
+
+## Project Structure
+
+```
+karukatta/
+├── main.cpp              # Compiler entry point and orchestration
+├── pkg/                  # Compiler components
+│   ├── lexer.hpp         # Lexical analyzer
+│   ├── parser.hpp        # Recursive descent parser
+│   ├── gen.hpp           # x86-64 code generator
+│   └── arena.hpp         # Arena memory allocator
+├── example/              # Example programs
+│   └── example.kar       # Sample Karukatta program
+├── docs/                 # Documentation
+│   ├── language-specification.md
+│   └── architecture.md
+├── build/                # Build artifacts
+│   └── karukatta         # Compiler executable
+└── runner.sh             # Build script
+```
+
+## Documentation
+
+**[Language Specification](docs/language-specification.md)**: Complete grammar, semantics, and language reference.
+
+**[Architecture Overview](docs/architecture.md)**: Detailed compiler design, implementation strategy, and data flow.
+
+## Language Grammar
+
+```ebnf
+program     ::= statement*
+statement   ::= exit_stmt | let_stmt | scope | if_stmt | while_stmt
+exit_stmt   ::= "exit" "(" expression ")" ";"
+let_stmt    ::= "let" identifier "=" expression ";"
+scope       ::= "{" statement* "}"
+if_stmt     ::= "if" "(" expression ")" scope ("else" scope)?
+while_stmt  ::= "while" "(" expression ")" scope
+expression  ::= term (operator term)*
+operator    ::= "+" | "-" | "*" | "/" | "==" | "!=" | "<" | "<=" | ">" | ">="
+term        ::= integer_literal | identifier | "(" expression ")"
+comment     ::= "//" [any character except newline]* newline
+```
+
+Operator precedence (high to low):
+1. Parentheses `( )`
+2. Multiplication `*`, Division `/`
+3. Addition `+`, Subtraction `-`
+4. Comparison `==`, `!=`, `<`, `<=`, `>`, `>=`
+
+## Architecture
+
+The compiler follows a traditional three-phase design:
+
+**Lexer** (`pkg/lexer.hpp`): Converts source text to token stream using finite automaton.
+
+**Parser** (`pkg/parser.hpp`): Builds Abstract Syntax Tree using recursive descent with Pratt parsing for expressions.
+
+**Generator** (`pkg/gen.hpp`): Traverses AST using visitor pattern to emit x86-64 assembly with stack-based evaluation.
+
+See [Architecture Documentation](docs/architecture.md) for detailed design rationale and implementation details.
+
+## Examples
+
+### Variables and Arithmetic
+
+```kar
+let a = 5;
+let b = 3;
+let result = a * 2 + b;
+exit(result);  // exits with code 13
+```
+
+### Comparisons and If-Else
+
+```kar
+let x = 10;
+let y = 20;
+
+if (x > y) {
+    exit(1);
+} else {
+    exit(0);
+}
+```
+
+### While Loops
+
+```kar
+let flag = 1;
+
+while (flag) {
+    exit(42);
+}
+
+exit(0);
+```
+
+### Comments and Complex Logic
+
+```kar
+// Calculate with comparisons
+let a = 10;
+let b = 20;
+let isLess = a < b;  // evaluates to 1 (true)
+
+if (isLess) {
+    exit(100);
+} else {
+    exit(200);
+}
+```
+
+## Implementation Details
+
+**Memory Management**: Uses arena allocation for AST nodes, providing O(1) allocation and deallocation with excellent cache locality.
+
+**Expression Parsing**: Implements Pratt parsing (precedence climbing) for elegant handling of operator precedence without grammar ambiguity.
+
+**Code Generation**: Stack-based evaluation model generates straightforward assembly code. Variables are tracked with stack offsets.
+
+**Scope Handling**: Lexical scoping with automatic stack cleanup when blocks exit.
+
+## Limitations
+
+Current implementation constraints:
+- Linux x86-64 only (uses Linux syscalls)
+- Single type system (64-bit integers)
+- No function definitions
+- No mutable variables (all variables are immutable)
+- No standard library
+- No arrays or strings
+
+These are deliberate design choices for educational clarity. The architecture supports future extensions.
+
+## Technical Notes
+
+**Assembly Format**: NASM syntax, ELF64 object format
+
+**Calling Convention**: Uses Linux syscalls directly (no libc)
+
+**Exit Syscall**: syscall number 60 (`sys_exit`)
+
+**Register Usage**: `rax` (accumulator), `rbx` (secondary), `rdi` (syscall argument), `rsp` (stack pointer)
+
+**Stack Growth**: Downward (standard x86-64 convention)
+
+## Version History
+
+**v2.0.0** (2026-01-04): Major feature release
+- Added comparison operators (`==`, `!=`, `<`, `<=`, `>`, `>=`)
+- Added else clauses for if statements
+- Added while loops
+- Added comment support (`//`)
+- Professional error reporting with line and column tracking
+
+**v1.0.0** (2023): Initial release
+- Basic arithmetic and variables
+- If statements
+- Scoped blocks
+
+See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
+
+## Future Directions
+
+Potential enhancements:
+- Type system with type checking
+- Function definitions and calls
+- Mutable variables with assignment operator
+- Arrays and strings
+- Multiple compilation targets (ARM64, etc.)
+- Optimization passes (constant folding, dead code elimination)
+- Standard library (I/O, string operations)
+
+## Contributing
+
+This is an educational project. When contributing:
+- Maintain code clarity over cleverness
+- Document design decisions
+- Add test cases for new features
+- Update documentation to match implementation
+
+## License
+
+See repository for license information.
+
+## Author
+
+Created by IR0NBYTE as an exploration of compiler construction techniques.
+
+## Acknowledgments
+
+Inspired by classical compiler design literature and modern parsing techniques. Built to demonstrate that compiler implementation, while complex, is approachable with proper decomposition and clear abstractions.

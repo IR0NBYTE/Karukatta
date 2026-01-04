@@ -1,0 +1,16 @@
+// Complex mathematical expression
+// Demonstrates multiple operators and parentheses
+
+let a = 10;
+let b = 5;
+let c = 3;
+let d = 2;
+
+let result = (a + b) * c - d * 2;
+// result = (10 + 5) * 3 - 2 * 2
+//        = 15 * 3 - 4
+//        = 45 - 4
+//        = 41
+
+exit(result);
+// Expected exit code: 41

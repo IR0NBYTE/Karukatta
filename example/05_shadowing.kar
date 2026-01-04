@@ -1,0 +1,19 @@
+// Nested scopes and variable access
+// Inner scopes can access outer scope variables
+
+let x = 5;
+
+{
+    let y = 10;
+
+    {
+        let z = 15;
+        // Can access x from outer scope
+        let result = x + y + z;
+        exit(result);
+        // Expected exit code: 30 (5 + 10 + 15)
+    }
+}
+
+exit(x);
+// This would exit with 5 if reached

@@ -1,1 +1,12 @@
 /.vscode
+
+# Build artifacts
+build/karukatta
+*.o
+*.asm
+
+# Test artifacts
+test_*
+tests/test_*
+tests/invalid_syntax.kar
+tests/unexpected_char.kar

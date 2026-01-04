@@ -1,4 +1,4 @@
-#! /usr/bin/bash
+#!/usr/bin/env bash
 
 RED='\033[0;31m'  # Red text
 BOLD='\033[1m'    # Bold text
@@ -18,8 +18,15 @@ print_error() {
 }
 
 mkdir -p "build"
-    
-g++ main.cpp -o ./build/karukatta -s -static 
+
+# Detect OS and compile accordingly
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS - compile without -static
+    g++ -std=c++17 main.cpp -o ./build/karukatta
+else
+    # Linux - compile with -static
+    g++ -std=c++17 main.cpp -o ./build/karukatta -s -static
+fi 
 
 if [ $? -eq 0 ]; then
     print_log "Compiling Terminated Successfully!"

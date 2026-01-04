@@ -1,0 +1,13 @@
+// Comparison operators test
+let x = 10;
+let y = 20;
+
+let equal = x == y;     // 0 (false)
+let noteq = x != y;     // 1 (true)
+let less = x < y;       // 1 (true)
+let greq = x >= y;      // 0 (false)
+
+// Result: 1 + 1 + 0 = 2
+let result = noteq + less + equal;
+exit(result);
+// Expected exit code: 2

@@ -1,7 +1,8 @@
 #pragma once
 
 #include <stdlib.h>
-#include <cstddef> 
+#include <cstddef>
+#include <cstdint>
 
 using namespace std; 
 
@@ -15,7 +16,7 @@ public:
     inline explicit ArenaAllocator(size_t bytes)
         : m_size(bytes)
     {
-        m_buffer = static_cast<byte*>(malloc(m_size));
+        m_buffer = static_cast<uint8_t*>(malloc(m_size));
         m_offset = m_buffer;
     }
 
@@ -38,6 +39,6 @@ public:
 
 private:
     size_t m_size;
-    byte* m_buffer;
-    byte* m_offset;
+    uint8_t* m_buffer;
+    uint8_t* m_offset;
 };

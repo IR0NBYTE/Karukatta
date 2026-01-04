@@ -1,0 +1,14 @@
+// Operator precedence demonstration
+// Shows how multiplication and division bind tighter than addition and subtraction
+
+let result1 = 2 + 3 * 4;
+// result1 = 2 + (3 * 4) = 14
+
+let result2 = (2 + 3) * 4;
+// result2 = 5 * 4 = 20
+
+let result3 = 10 - 2 * 3;
+// result3 = 10 - (2 * 3) = 4
+
+exit(result2);
+// Expected exit code: 20
