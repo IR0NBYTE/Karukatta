@@ -288,49 +288,6 @@ These are deliberate design choices for educational clarity. The architecture su
 
 **Stack Growth**: Downward (standard x86-64 convention)
 
-## Version History
-
-**v2.0.0** (2026-01-04): Major feature release
-- Added comparison operators (`==`, `!=`, `<`, `<=`, `>`, `>=`)
-- Added else clauses for if statements
-- Added while loops
-- Added comment support (`//`)
-- Professional error reporting with line and column tracking
-
-**v1.0.0** (2023): Initial release
-- Basic arithmetic and variables
-- If statements
-- Scoped blocks
-
-See [CHANGELOG.md](CHANGELOG.md) for detailed version history.
-
-## Future Directions
-
-Potential enhancements:
-- Type system with type checking
-- Function definitions and calls
-- Mutable variables with assignment operator
-- Arrays and strings
-- Multiple compilation targets (ARM64, etc.)
-- Optimization passes (constant folding, dead code elimination)
-- Standard library (I/O, string operations)
-
-## Contributing
-
-This is an educational project. When contributing:
-- Maintain code clarity over cleverness
-- Document design decisions
-- Add test cases for new features
-- Update documentation to match implementation
-
 ## License
 
-See repository for license information.
-
-## Author
-
-Created by IR0NBYTE as an exploration of compiler construction techniques.
-
-## Acknowledgments
-
-Inspired by classical compiler design literature and modern parsing techniques. Built to demonstrate that compiler implementation, while complex, is approachable with proper decomposition and clear abstractions.
+MIT License - See LICENSE file for details.
