@@ -457,8 +457,8 @@ private:
             }
 
             case IROp::COND_BRANCH: {
-                // Branch if src1 == 0
-                Reg cond = load_vreg(inst.src1.reg, RAX);
+                // Branch if src1 == 0. Use R10 as scratch to avoid clobbering live regs.
+                Reg cond = load_vreg(inst.src1.reg, R10);
                 emitter.emit_test_rr(cond, cond);
                 size_t patch = emitter.emit_jz_rel32();
                 m_label_patches.push_back({patch, inst.label_id});
