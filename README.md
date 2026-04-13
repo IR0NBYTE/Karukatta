@@ -4,13 +4,13 @@
     <img src="logo-white.png" alt="Karukatta Logo" width="500" height="500">
 </div>
 
-A compiled programming language that generates native machine code with built-in obfuscation. No assembler, no linker — just raw bytes straight to an executable.
+A compiled programming language that generates native machine code with built-in obfuscation. No assembler, no linker - just raw bytes straight to an executable.
 
 Targets both **x86-64 Linux** and **ARM64 macOS** (Apple Silicon).
 
 ## What is this?
 
-Karukatta is a small language I built to explore how compilers actually work under the hood — from parsing all the way down to encoding individual machine instructions. The twist: every binary it produces can be obfuscated out of the box. Control flow flattening, dead code injection, instruction substitution — all built into the compiler pipeline.
+Karukatta is a small language I built to explore how compilers actually work under the hood - from parsing all the way down to encoding individual machine instructions. The twist: every binary it produces can be obfuscated out of the box. Control flow flattening, dead code injection, instruction substitution - all built into the compiler pipeline.
 
 The compiler does everything itself. On Linux, it writes ELF binaries directly (no NASM, no LD, nothing). On macOS, it emits raw ARM64 machine code and hands it to the system linker for code signing.
 
@@ -54,7 +54,7 @@ Compile with obfuscation:
 
 ## The language
 
-Pretty minimal right now — integers, variables, comparisons, branching, loops.
+Pretty minimal right now - integers, variables, comparisons, branching, loops.
 
 ```kar
 let score = 75;
@@ -134,15 +134,15 @@ source.kar
  executable
 ```
 
-No external tools in the pipeline for Linux — the compiler literally writes the ELF header, program headers, and machine code bytes into a file. That's your binary.
+No external tools in the pipeline for Linux - the compiler literally writes the ELF header, program headers, and machine code bytes into a file. That's your binary.
 
 ## Obfuscation
 
 This is the fun part. The compiler has an IR pass system, and some of those passes exist purely to make the output harder to reverse engineer.
 
-**`--obf=1`** — Instruction substitution. Simple operations get replaced with equivalent but more complex sequences. `ADD a, b` might become `SUB a, NEG(b)` or `a + b + noise - noise`. Each compilation with a different `--seed` picks different substitutions.
+**`--obf=1`** - Instruction substitution. Simple operations get replaced with equivalent but more complex sequences. `ADD a, b` might become `SUB a, NEG(b)` or `a + b + noise - noise`. Each compilation with a different `--seed` picks different substitutions.
 
-**`--obf=2`** — Everything from level 1, plus control flow flattening and dead code injection. CFF rewrites all the basic blocks into a state-machine dispatcher — every block transition goes through a central switch on a randomized state variable. Dead code insertion sprinkles fake computations throughout that execute but don't affect output.
+**`--obf=2`** - Everything from level 1, plus control flow flattening and dead code injection. CFF rewrites all the basic blocks into a state-machine dispatcher - every block transition goes through a central switch on a randomized state variable. Dead code insertion sprinkles fake computations throughout that execute but don't affect output.
 
 The result: same source code, wildly different binary each time. Try it:
 
