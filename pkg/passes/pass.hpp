@@ -4,11 +4,8 @@
 #include <random>
 #include <string>
 
-/*
-    Karukatta Pass Infrastructure
-    All optimization and obfuscation passes implement this interface.
-    Passes transform IR → IR.
-*/
+// Pass system. Each pass takes the IR, messes with it, gives it back.
+// Obfuscation passes use a seeded PRNG so you can reproduce builds.
 
 class Pass {
 public:

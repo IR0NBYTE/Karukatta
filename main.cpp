@@ -17,16 +17,9 @@
 #include "./pkg/passes/insn_sub.hpp"
 #include "./pkg/passes/dead_insert.hpp"
 
-/*
-    Karukatta Compiler v2.0
-    @ir0nbyte
-
-    Compilation pipeline:
-      Source (.kar) → Lexer → Parser → AST → IR → x86-64/ARM64 → ELF/Mach-O
-
-    No NASM. No external assembler. No linker.
-    Direct machine code emission.
-*/
+// Karukatta compiler — @ir0nbyte
+// source -> tokens -> AST -> IR -> machine code -> binary
+// no NASM, no assembler, no bullshit (on Linux at least)
 
 struct CompilerOptions {
     std::string input_file;

@@ -2,24 +2,9 @@
 
 #include "pass.hpp"
 
-/*
-    Instruction Substitution Pass
-
-    Replaces simple arithmetic/logic operations with equivalent but
-    more complex sequences. Each compilation with a different seed
-    produces different substitutions → polymorphic output.
-
-    Examples:
-        ADD a, b  →  SUB a, NEG(b)
-                  →  a = a - (-b)
-                  →  a = (a XOR b) + 2*(a AND b)  [too complex for IR, skip]
-
-        SUB a, b  →  ADD a, NEG(b)
-                  →  a = NOT(NOT(a) + b)
-
-        MOV a, 0  →  SUB a, a
-                  →  XOR a, a (handled at machine level)
-*/
+// Instruction substitution — replaces simple ops with equivalent junk.
+// ADD a, b might become SUB a, NEG(b) or a + b + noise - noise.
+// Different seed = different substitutions = polymorphic output.
 
 class InstructionSubstitutionPass : public Pass {
 public:

@@ -6,10 +6,8 @@
 #include <string>
 #include <algorithm>
 
-/*
-    Karukatta IR Builder - Lowers AST to IR
-    Walks the AST and emits three-address IR instructions.
-*/
+// Walks the AST and spits out IR instructions.
+// Handles variable scoping and syscall number mapping per target OS.
 
 enum class TargetOS { LINUX, MACOS };
 

@@ -4,172 +4,220 @@
     <img src="logo-white.png" alt="Karukatta Logo" width="500" height="500">
 </div>
 
-A compiler for the Karukatta programming language, written in C++. Compiles to native x86-64 executables via NASM assembly.
+A compiled programming language that generates native machine code with built-in obfuscation. No assembler, no linker — just raw bytes straight to an executable.
 
-## About
+Targets both **x86-64 Linux** and **ARM64 macOS** (Apple Silicon).
 
-Karukatta is an educational compiler demonstrating classical compiler construction techniques. It implements a complete compilation pipeline from source code to executable binary, including lexical analysis, syntax analysis with operator precedence parsing, and x86-64 code generation.
+## What is this?
 
-The compiler is designed to be readable and serve as a learning resource for compiler implementation, while remaining capable of producing functional executables.
+Karukatta is a small language I built to explore how compilers actually work under the hood — from parsing all the way down to encoding individual machine instructions. The twist: every binary it produces can be obfuscated out of the box. Control flow flattening, dead code injection, instruction substitution — all built into the compiler pipeline.
 
-## Language Overview
+The compiler does everything itself. On Linux, it writes ELF binaries directly (no NASM, no LD, nothing). On macOS, it emits raw ARM64 machine code and hands it to the system linker for code signing.
 
-Karukatta is an imperative language with C-like syntax supporting:
+## Quick start
 
-- Integer arithmetic with proper operator precedence
-- Comparison operators for conditional logic
-- Variable declarations and lexical scoping
-- Conditional execution with if-else statements
-- While loops for iteration
-- Single-line comments
-- Program exit with status codes
-
-### Example Program
-
-```kar
-// Variable declarations and comparisons
-let x = 10;
-let y = 20;
-
-// Conditional logic with else
-if (x < y) {
-    exit(1);
-} else {
-    exit(0);
-}
-```
-
-For a complete language reference, see [Language Specification](docs/language-specification.md).
-
-## Features
-
-**Compiler Implementation**:
-- Single-pass compilation architecture
-- Pratt parser for expression precedence
-- Professional error reporting with line and column tracking
-- Arena-based memory allocation for AST nodes
-- Stack-based code generation
-- Direct x86-64 assembly output
-
-**Language Features**:
-- Arithmetic expressions: `+`, `-`, `*`, `/`
-- Comparison operators: `==`, `!=`, `<`, `<=`, `>`, `>=`
-- Variable bindings with `let`
-- Lexically scoped blocks
-- Conditional execution with `if` and `else`
-- While loops
-- Single-line comments with `//`
-- System exit with return codes
-
-## Prerequisites
-
-**Build Requirements**:
-- C++17 compatible compiler (GCC 7+, Clang 5+)
-- Make or equivalent build system
-
-**Runtime Requirements**:
-- NASM (Netwide Assembler)
-- GNU LD (Linker)
-- Linux x86-64 system
-
-### Installing Prerequisites
-
-**Debian/Ubuntu**:
-```bash
-sudo apt-get update
-sudo apt-get install build-essential nasm
-```
-
-**Fedora/RHEL**:
-```bash
-sudo dnf install gcc-c++ nasm
-```
-
-**macOS**:
-```bash
-brew install nasm
-# Xcode Command Line Tools provides g++
-xcode-select --install
-```
-
-## Installation
-
-Clone the repository:
 ```bash
 git clone https://github.com/IR0NBYTE/Karukatta.git
 cd Karukatta
-```
-
-Build the compiler:
-```bash
 ./runner.sh
 ```
 
-The compiled binary will be located at `build/karukatta`.
+Write a program:
 
-## Usage
-
-### Compiling a Program
-
-```bash
-./build/karukatta <source.kar> -o <output-binary>
+```kar
+let a = 5;
+let b = 3;
+let result = a * 2 + b;
+exit(result);  // exits with 13
 ```
 
-The compiler generates an executable binary that can be run directly:
+Compile and run:
 
 ```bash
 ./build/karukatta program.kar -o program
 ./program
-echo $?  # Check exit status
+echo $?  # 13
 ```
 
-### Running the Example
+Compile with obfuscation:
 
 ```bash
-cd example
-../build/karukatta example.kar -o code
-./code
-echo $?  # Should output: 5
+# level 1: instruction substitution
+./build/karukatta program.kar -o program --obf=1
+
+# level 2: control flow flattening + dead code injection
+./build/karukatta program.kar -o program --obf=2
+
+# different seed = different binary, same behavior
+./build/karukatta program.kar -o program --obf=2 --seed=1337
 ```
 
-### Compilation Process
+## The language
 
-The compiler performs the following steps:
-1. Lexical analysis (tokenization)
-2. Syntax analysis (parsing to AST)
-3. Code generation (x86-64 assembly)
-4. Assembly (NASM produces object file)
-5. Linking (LD produces executable)
+Pretty minimal right now — integers, variables, comparisons, branching, loops.
 
-Intermediate `.asm` and `.o` files are generated alongside the output binary.
+```kar
+let score = 75;
 
-## Project Structure
-
-```
-karukatta/
-├── main.cpp              # Compiler entry point and orchestration
-├── pkg/                  # Compiler components
-│   ├── lexer.hpp         # Lexical analyzer
-│   ├── parser.hpp        # Recursive descent parser
-│   ├── gen.hpp           # x86-64 code generator
-│   └── arena.hpp         # Arena memory allocator
-├── example/              # Example programs
-│   └── example.kar       # Sample Karukatta program
-├── docs/                 # Documentation
-│   ├── language-specification.md
-│   └── architecture.md
-├── build/                # Build artifacts
-│   └── karukatta         # Compiler executable
-└── runner.sh             # Build script
+if (score >= 90) {
+    exit(1);  // A
+} else {
+    if (score >= 70) {
+        exit(2);  // B
+    } else {
+        exit(3);  // C
+    }
+}
 ```
 
-## Documentation
+```kar
+// all the comparison operators work
+let a = 10;
+let b = 20;
+let eq = a == b;   // 0
+let ne = a != b;   // 1
+let lt = a < b;    // 1
+let sum = eq + ne + lt;
+exit(sum);  // 2
+```
 
-**[Language Specification](docs/language-specification.md)**: Complete grammar, semantics, and language reference.
+```kar
+// while loops
+let flag = 1;
+while (flag) {
+    exit(42);
+}
+```
 
-**[Architecture Overview](docs/architecture.md)**: Detailed compiler design, implementation strategy, and data flow.
+**What's supported:**
+- `let` bindings (immutable)
+- `+` `-` `*` `/` arithmetic
+- `==` `!=` `<` `<=` `>` `>=` comparisons
+- `if` / `else` 
+- `while` loops
+- `{ }` scoped blocks with variable shadowing
+- `//` comments
+- `exit(n)` to set the process exit code
 
-## Language Grammar
+**What's not there yet:**
+- Functions
+- Strings
+- Arrays
+- Mutable variables
+- Standard library
+
+## How the compiler works
+
+```
+source.kar
+    |
+    v
+ [Lexer]     tokenizes the source
+    |
+    v
+ [Parser]    builds an AST (Pratt parsing for expressions)
+    |
+    v
+ [IR]        lowers to three-address code with virtual registers
+    |
+    v
+ [Passes]    optimization + obfuscation (if enabled)
+    |
+    v
+ [Backend]   encodes to real machine instructions
+    |         (x86-64: REX + opcode + ModR/M + SIB)
+    |         (ARM64: fixed 32-bit instruction encoding)
+    v
+ [Emitter]   wraps in ELF (Linux) or Mach-O (macOS)
+    |
+    v
+ executable
+```
+
+No external tools in the pipeline for Linux — the compiler literally writes the ELF header, program headers, and machine code bytes into a file. That's your binary.
+
+## Obfuscation
+
+This is the fun part. The compiler has an IR pass system, and some of those passes exist purely to make the output harder to reverse engineer.
+
+**`--obf=1`** — Instruction substitution. Simple operations get replaced with equivalent but more complex sequences. `ADD a, b` might become `SUB a, NEG(b)` or `a + b + noise - noise`. Each compilation with a different `--seed` picks different substitutions.
+
+**`--obf=2`** — Everything from level 1, plus control flow flattening and dead code injection. CFF rewrites all the basic blocks into a state-machine dispatcher — every block transition goes through a central switch on a randomized state variable. Dead code insertion sprinkles fake computations throughout that execute but don't affect output.
+
+The result: same source code, wildly different binary each time. Try it:
+
+```bash
+./build/karukatta example.kar -o bin1 --obf=2 --seed=111
+./build/karukatta example.kar -o bin2 --obf=2 --seed=222
+
+# both produce the same exit code, but:
+diff <(xxd bin1) <(xxd bin2)  # completely different binaries
+```
+
+## Cross-compilation
+
+The compiler auto-detects your platform, but you can target explicitly:
+
+```bash
+# compile for x86-64 Linux (produces a standalone ELF, no dependencies)
+./build/karukatta program.kar -o program --target=x86_64-linux
+
+# compile for ARM64 macOS
+./build/karukatta program.kar -o program --target=arm64-macos
+
+# dump the IR to see what the compiler is doing
+./build/karukatta program.kar -o program --dump-ir
+```
+
+## Building
+
+You just need a C++17 compiler. That's it.
+
+```bash
+./runner.sh
+```
+
+Or manually:
+
+```bash
+g++ -std=c++17 main.cpp -o build/karukatta
+```
+
+To test Linux binaries on macOS, use Docker:
+
+```bash
+./build/karukatta program.kar -o build/program --target=x86_64-linux
+docker run --rm -v $(pwd)/build:/app ubuntu:22.04 sh -c '/app/program; echo $?'
+```
+
+## Project layout
+
+```
+Karukatta/
+├── main.cpp                 # compiler driver + CLI
+├── pkg/
+│   ├── lexer.hpp            # tokenizer
+│   ├── parser.hpp           # recursive descent + Pratt parsing
+│   ├── arena.hpp            # bump allocator for AST nodes
+│   ├── ir.hpp               # intermediate representation
+│   ├── ir_builder.hpp       # AST -> IR lowering
+│   ├── target/
+│   │   ├── x86_64.hpp       # x86-64 instruction encoder
+│   │   └── arm64.hpp        # ARM64 instruction encoder
+│   ├── emit/
+│   │   ├── elf.hpp          # ELF64 binary writer
+│   │   └── macho.hpp        # Mach-O binary writer
+│   └── passes/
+│       ├── pass.hpp          # pass interface + seeded RNG
+│       ├── cff.hpp           # control flow flattening
+│       ├── insn_sub.hpp      # instruction substitution
+│       └── dead_insert.hpp   # dead code insertion
+├── example/                  # test programs
+├── docs/                     # language spec + architecture docs
+└── runner.sh                 # build script
+```
+
+## Grammar
 
 ```ebnf
 program     ::= statement*
@@ -182,112 +230,8 @@ while_stmt  ::= "while" "(" expression ")" scope
 expression  ::= term (operator term)*
 operator    ::= "+" | "-" | "*" | "/" | "==" | "!=" | "<" | "<=" | ">" | ">="
 term        ::= integer_literal | identifier | "(" expression ")"
-comment     ::= "//" [any character except newline]* newline
 ```
-
-Operator precedence (high to low):
-1. Parentheses `( )`
-2. Multiplication `*`, Division `/`
-3. Addition `+`, Subtraction `-`
-4. Comparison `==`, `!=`, `<`, `<=`, `>`, `>=`
-
-## Architecture
-
-The compiler follows a traditional three-phase design:
-
-**Lexer** (`pkg/lexer.hpp`): Converts source text to token stream using finite automaton.
-
-**Parser** (`pkg/parser.hpp`): Builds Abstract Syntax Tree using recursive descent with Pratt parsing for expressions.
-
-**Generator** (`pkg/gen.hpp`): Traverses AST using visitor pattern to emit x86-64 assembly with stack-based evaluation.
-
-See [Architecture Documentation](docs/architecture.md) for detailed design rationale and implementation details.
-
-## Examples
-
-### Variables and Arithmetic
-
-```kar
-let a = 5;
-let b = 3;
-let result = a * 2 + b;
-exit(result);  // exits with code 13
-```
-
-### Comparisons and If-Else
-
-```kar
-let x = 10;
-let y = 20;
-
-if (x > y) {
-    exit(1);
-} else {
-    exit(0);
-}
-```
-
-### While Loops
-
-```kar
-let flag = 1;
-
-while (flag) {
-    exit(42);
-}
-
-exit(0);
-```
-
-### Comments and Complex Logic
-
-```kar
-// Calculate with comparisons
-let a = 10;
-let b = 20;
-let isLess = a < b;  // evaluates to 1 (true)
-
-if (isLess) {
-    exit(100);
-} else {
-    exit(200);
-}
-```
-
-## Implementation Details
-
-**Memory Management**: Uses arena allocation for AST nodes, providing O(1) allocation and deallocation with excellent cache locality.
-
-**Expression Parsing**: Implements Pratt parsing (precedence climbing) for elegant handling of operator precedence without grammar ambiguity.
-
-**Code Generation**: Stack-based evaluation model generates straightforward assembly code. Variables are tracked with stack offsets.
-
-**Scope Handling**: Lexical scoping with automatic stack cleanup when blocks exit.
-
-## Limitations
-
-Current implementation constraints:
-- Linux x86-64 only (uses Linux syscalls)
-- Single type system (64-bit integers)
-- No function definitions
-- No mutable variables (all variables are immutable)
-- No standard library
-- No arrays or strings
-
-These are deliberate design choices for educational clarity. The architecture supports future extensions.
-
-## Technical Notes
-
-**Assembly Format**: NASM syntax, ELF64 object format
-
-**Calling Convention**: Uses Linux syscalls directly (no libc)
-
-**Exit Syscall**: syscall number 60 (`sys_exit`)
-
-**Register Usage**: `rax` (accumulator), `rbx` (secondary), `rdi` (syscall argument), `rsp` (stack pointer)
-
-**Stack Growth**: Downward (standard x86-64 convention)
 
 ## License
 
-MIT License - See LICENSE file for details.
+MIT

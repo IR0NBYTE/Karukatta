@@ -5,12 +5,8 @@
 #include <cstring>
 #include <fstream>
 
-/*
-    Karukatta Mach-O Emitter
-    Produces Mach-O executables for macOS ARM64 and x86-64.
-    Uses LC_UNIXTHREAD for standalone executables (no libSystem).
-    Includes proper __LINKEDIT and LC_CODE_SIGNATURE for Apple Silicon.
-*/
+// Mach-O emitter for macOS. Uses LC_UNIXTHREAD so we don't need libSystem.
+// Includes __LINKEDIT segment so codesign doesn't complain.
 
 namespace macho {
 

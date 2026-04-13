@@ -6,15 +6,8 @@
 #include <unordered_map>
 #include <cassert>
 
-/*
-    Karukatta ARM64 (AArch64) Backend
-    Translates IR → raw ARM64 machine code bytes.
-    Every ARM64 instruction is exactly 4 bytes (32 bits).
-
-    Supports:
-    - macOS ARM64 syscalls (X16 = 0x2000000 | nr, SVC #0x80)
-    - Linux ARM64 syscalls (X8 = nr, SVC #0)
-*/
+// ARM64 backend — every instruction is a clean 4 bytes, unlike x86's chaos.
+// Handles both macOS (X16 + SVC #0x80) and Linux (X8 + SVC #0) syscalls.
 
 namespace arm64 {
 

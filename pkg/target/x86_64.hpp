@@ -8,11 +8,9 @@
 #include <cassert>
 #include <algorithm>
 
-/*
-    Karukatta x86-64 Backend
-    Translates IR → raw x86-64 machine code bytes.
-    No NASM. No external assembler. Direct byte emission.
-*/
+// x86-64 backend — turns IR into raw machine code bytes.
+// Handles REX prefixes, ModR/M encoding, SIB bytes, the whole mess.
+// No NASM, no assembler, just writing bytes into a buffer.
 
 namespace x86 {
 

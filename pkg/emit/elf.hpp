@@ -5,11 +5,8 @@
 #include <cstring>
 #include <fstream>
 
-/*
-    Karukatta ELF64 Emitter
-    Produces minimal but valid ELF64 executables directly.
-    No linker needed.
-*/
+// Writes a bare-minimum ELF64 binary. One PT_LOAD segment, entry point
+// right after the headers. That's all you need for a static executable.
 
 namespace elf {
 

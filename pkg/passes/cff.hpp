@@ -5,26 +5,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
-/*
-    Control Flow Flattening (CFF) Pass
-
-    Transforms structured control flow into a dispatcher-based switch.
-    Every basic block gets a random state ID. All transitions go through
-    a central dispatcher that selects the next block based on a state variable.
-
-    Before CFF:
-        B0 → B1 → B2 → B3
-
-    After CFF:
-        entry: state = STATE_B0; goto dispatcher
-        dispatcher: switch(state) { STATE_B0→B0, STATE_B1→B1, ... }
-        B0: ...; state = STATE_B1; goto dispatcher
-        B1: ...; state = STATE_B2; goto dispatcher
-        ...
-
-    This makes control flow analysis extremely difficult for disassemblers
-    and decompilers (IDA, Ghidra, Binary Ninja).
-*/
+// Control Flow Flattening
+//
+// Turns normal control flow into a dispatcher loop. Each basic block
+// gets a random state ID, and every transition goes through a central
+// switch. Makes Ghidra/IDA decompilation output look like spaghetti.
 
 class ControlFlowFlatteningPass : public Pass {
 public:

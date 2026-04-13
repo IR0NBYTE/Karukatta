@@ -2,13 +2,8 @@
 
 #include "pass.hpp"
 
-/*
-    Dead Code Insertion Pass
-
-    Inserts computations that execute but don't affect program output.
-    Uses registers that are never read afterward. Makes the binary
-    appear to do more work than it actually does.
-*/
+// Sprinkles fake computations into the IR that run but don't affect anything.
+// Uses fresh virtual registers that nobody ever reads. Just noise.
 
 class DeadCodeInsertionPass : public Pass {
 public:

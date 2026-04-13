@@ -7,10 +7,9 @@
 #include <sstream>
 #include <cassert>
 
-/*
-    Karukatta IR - Three-Address Code with Virtual Registers
-    Architecture-independent intermediate representation.
-*/
+// Karukatta IR
+// Three-address code with unlimited virtual registers.
+// This sits between the AST and the machine-specific backends.
 
 enum class IROp {
     // Data movement

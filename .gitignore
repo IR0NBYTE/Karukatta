@@ -16,3 +16,4 @@ build/simple_*
 tests/test_*
 tests/invalid_syntax.kar
 tests/unexpected_char.kar
+build/
