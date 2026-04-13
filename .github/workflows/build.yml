@@ -17,21 +17,42 @@ jobs:
           mkdir -p build
           g++ -std=c++17 -O2 main.cpp -o build/karukatta
 
-      - name: Test programs (obf=0)
+      - name: Test programs
         run: |
+          check() {
+            local bin=$1 expected=$2
+            $bin || true
+            local got=$?
+            if [ "$got" -ne "$expected" ]; then
+              echo "FAIL: $bin exited $got, expected $expected"
+              exit 1
+            fi
+            echo "PASS: $bin -> $got"
+          }
+
+          # compile all examples
           for f in example/*.kar; do
             name=$(basename $f .kar)
             ./build/karukatta $f -o build/$name --target=x86_64-linux --obf=0 2>&1
           done
-          build/example; test $? -eq 5
-          build/test_arith; test $? -eq 13
-          build/test_cmp; test $? -eq 1
 
-      - name: Test obfuscation levels
+          check build/example 5
+          check build/test_arith 13
+          check build/test_cmp 1
+          check build/test_while 42
+          check build/test_nested 1
+          check build/test_complex 15
+          check build/test_all_cmp 3
+          check build/test_ifelse_chain 2
+
+      - name: Test obfuscation
         run: |
           for obf in 1 2; do
             ./build/karukatta example/example.kar -o build/obf_test --target=x86_64-linux --obf=$obf --seed=42 2>&1
-            build/obf_test; test $? -eq 5
+            build/obf_test || true
+            got=$?
+            if [ "$got" -ne 5 ]; then echo "FAIL obf=$obf: $got"; exit 1; fi
+            echo "PASS obf=$obf"
           done
 
       - name: Build release binary
@@ -53,21 +74,36 @@ jobs:
           mkdir -p build
           g++ -std=c++17 -O2 main.cpp -o build/karukatta
 
-      - name: Test programs (obf=0)
+      - name: Test programs
         run: |
+          check() {
+            local bin=$1 expected=$2
+            $bin || true
+            local got=$?
+            if [ "$got" -ne "$expected" ]; then
+              echo "FAIL: $bin exited $got, expected $expected"
+              exit 1
+            fi
+            echo "PASS: $bin -> $got"
+          }
+
           for f in example/*.kar; do
             name=$(basename $f .kar)
             ./build/karukatta $f -o build/$name --obf=0 2>&1
           done
-          build/example; test $? -eq 5
-          build/test_arith; test $? -eq 13
-          build/test_cmp; test $? -eq 1
 
-      - name: Test obfuscation levels
+          check build/example 5
+          check build/test_arith 13
+          check build/test_cmp 1
+
+      - name: Test obfuscation
         run: |
           for obf in 1 2; do
             ./build/karukatta example/example.kar -o build/obf_test --obf=$obf --seed=42 2>&1
-            build/obf_test; test $? -eq 5
+            build/obf_test || true
+            got=$?
+            if [ "$got" -ne 5 ]; then echo "FAIL obf=$obf: $got"; exit 1; fi
+            echo "PASS obf=$obf"
           done
 
       - name: Build release binary
@@ -99,13 +135,3 @@ jobs:
         with:
           name: karukatta-windows-x86_64
           path: karukatta-windows-x86_64.exe
-
-  release:
-    needs: [build-linux, build-macos, build-windows]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/download-artifact@v4
-
-      - name: List artifacts
-        run: find . -type f | head -20
