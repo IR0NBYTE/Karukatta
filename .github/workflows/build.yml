@@ -19,18 +19,20 @@ jobs:
 
       - name: Test programs
         run: |
+          set +e
+          FAIL=0
+
           check() {
             local bin=$1 expected=$2
-            $bin || true
-            local got=$?
+            $bin; local got=$?
             if [ "$got" -ne "$expected" ]; then
               echo "FAIL: $bin exited $got, expected $expected"
-              exit 1
+              FAIL=1
+            else
+              echo "PASS: $bin -> $got"
             fi
-            echo "PASS: $bin -> $got"
           }
 
-          # compile all examples
           for f in example/*.kar; do
             name=$(basename $f .kar)
             ./build/karukatta $f -o build/$name --target=x86_64-linux --obf=0 2>&1
@@ -45,12 +47,14 @@ jobs:
           check build/test_all_cmp 3
           check build/test_ifelse_chain 2
 
+          if [ "$FAIL" -eq 1 ]; then exit 1; fi
+
       - name: Test obfuscation
         run: |
+          set +e
           for obf in 1 2; do
             ./build/karukatta example/example.kar -o build/obf_test --target=x86_64-linux --obf=$obf --seed=42 2>&1
-            build/obf_test || true
-            got=$?
+            build/obf_test; got=$?
             if [ "$got" -ne 5 ]; then echo "FAIL obf=$obf: $got"; exit 1; fi
             echo "PASS obf=$obf"
           done
@@ -76,15 +80,18 @@ jobs:
 
       - name: Test programs
         run: |
+          set +e
+          FAIL=0
+
           check() {
             local bin=$1 expected=$2
-            $bin || true
-            local got=$?
+            $bin; local got=$?
             if [ "$got" -ne "$expected" ]; then
               echo "FAIL: $bin exited $got, expected $expected"
-              exit 1
+              FAIL=1
+            else
+              echo "PASS: $bin -> $got"
             fi
-            echo "PASS: $bin -> $got"
           }
 
           for f in example/*.kar; do
@@ -96,12 +103,14 @@ jobs:
           check build/test_arith 13
           check build/test_cmp 1
 
+          if [ "$FAIL" -eq 1 ]; then exit 1; fi
+
       - name: Test obfuscation
         run: |
+          set +e
           for obf in 1 2; do
             ./build/karukatta example/example.kar -o build/obf_test --obf=$obf --seed=42 2>&1
-            build/obf_test || true
-            got=$?
+            build/obf_test; got=$?
             if [ "$got" -ne 5 ]; then echo "FAIL obf=$obf: $got"; exit 1; fi
             echo "PASS obf=$obf"
           done
