@@ -13,24 +13,25 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build compiler
-        run: g++ -std=c++17 -O2 main.cpp -o build/karukatta
+        run: |
+          mkdir -p build
+          g++ -std=c++17 -O2 main.cpp -o build/karukatta
 
       - name: Test programs (obf=0)
         run: |
           for f in example/*.kar; do
             name=$(basename $f .kar)
-            ./build/karukatta $f -o build/$name --target=x86_64-linux --obf=0
+            ./build/karukatta $f -o build/$name --target=x86_64-linux --obf=0 2>&1
           done
-          build/example && [ $? -eq 5 ]
-          build/test_arith && [ $? -eq 13 ]
-          build/test_cmp && [ $? -eq 1 ]
+          build/example; test $? -eq 5
+          build/test_arith; test $? -eq 13
+          build/test_cmp; test $? -eq 1
 
       - name: Test obfuscation levels
         run: |
           for obf in 1 2; do
-            ./build/karukatta example/example.kar -o build/obf_test --target=x86_64-linux --obf=$obf --seed=42
-            build/obf_test
-            if [ $? -ne 5 ]; then echo "FAIL obf=$obf"; exit 1; fi
+            ./build/karukatta example/example.kar -o build/obf_test --target=x86_64-linux --obf=$obf --seed=42 2>&1
+            build/obf_test; test $? -eq 5
           done
 
       - name: Build release binary
@@ -48,24 +49,25 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build compiler
-        run: g++ -std=c++17 -O2 main.cpp -o build/karukatta
+        run: |
+          mkdir -p build
+          g++ -std=c++17 -O2 main.cpp -o build/karukatta
 
       - name: Test programs (obf=0)
         run: |
           for f in example/*.kar; do
             name=$(basename $f .kar)
-            ./build/karukatta $f -o build/$name --target=arm64-macos --obf=0 2>/dev/null
+            ./build/karukatta $f -o build/$name --obf=0 2>&1
           done
-          build/example; [ $? -eq 5 ]
-          build/test_arith; [ $? -eq 13 ]
-          build/test_cmp; [ $? -eq 1 ]
+          build/example; test $? -eq 5
+          build/test_arith; test $? -eq 13
+          build/test_cmp; test $? -eq 1
 
       - name: Test obfuscation levels
         run: |
           for obf in 1 2; do
-            ./build/karukatta example/example.kar -o build/obf_test --target=arm64-macos --obf=$obf --seed=42 2>/dev/null
-            build/obf_test
-            if [ $? -ne 5 ]; then echo "FAIL obf=$obf"; exit 1; fi
+            ./build/karukatta example/example.kar -o build/obf_test --obf=$obf --seed=42 2>&1
+            build/obf_test; test $? -eq 5
           done
 
       - name: Build release binary
