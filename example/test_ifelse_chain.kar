@@ -1,0 +1,16 @@
+// Test if-else chains
+let score = 75;
+
+if (score >= 90) {
+    exit(1);
+} else {
+    if (score >= 70) {
+        exit(2);
+    } else {
+        if (score >= 50) {
+            exit(3);
+        } else {
+            exit(4);
+        }
+    }
+}

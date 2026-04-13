@@ -1,0 +1,8 @@
+// Test while loop: flag-based exit
+let flag = 1;
+
+while (flag) {
+    exit(42);
+}
+
+exit(0);

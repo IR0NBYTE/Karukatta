@@ -1,0 +1,8 @@
+let x = 10;
+let y = 20;
+
+if (x < y) {
+    exit(1);
+} else {
+    exit(0);
+}

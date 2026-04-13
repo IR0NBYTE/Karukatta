@@ -1,0 +1,15 @@
+// Test all comparison operators
+let a = 10;
+let b = 20;
+
+let eq = a == b;
+let ne = a != b;
+let lt = a < b;
+let le = a <= b;
+let gt = a > b;
+let ge = a >= b;
+
+// eq=0, ne=1, lt=1, le=1, gt=0, ge=0
+// sum = 0 + 1 + 1 + 1 + 0 + 0 = 3
+let sum = eq + ne + lt + le + gt + ge;
+exit(sum);

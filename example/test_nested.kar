@@ -1,0 +1,12 @@
+// Test nested scopes and variable shadowing
+let x = 10;
+
+{
+    let y = 20;
+    let z = x + y;
+    if (z == 30) {
+        exit(1);
+    }
+}
+
+exit(0);

@@ -1,0 +1,12 @@
+// Test complex expressions with multiple operators
+let a = 100;
+let b = 50;
+let c = 3;
+
+let result = (a - b) * c / 10;
+
+if (result == 15) {
+    exit(15);
+} else {
+    exit(99);
+}

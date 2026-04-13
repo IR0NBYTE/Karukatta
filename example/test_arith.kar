@@ -1,0 +1,4 @@
+let a = 5;
+let b = 3;
+let result = a * 2 + b;
+exit(result);

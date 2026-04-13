@@ -6,7 +6,13 @@ build/karukatta
 *.asm
 
 # Test artifacts
-test_*
+build/test_*
+build/linux_*
+build/e2e_*
+build/obf*
+build/poly*
+build/debug_*
+build/simple_*
 tests/test_*
 tests/invalid_syntax.kar
 tests/unexpected_char.kar
